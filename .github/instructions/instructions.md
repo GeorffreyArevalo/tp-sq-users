@@ -20,11 +20,16 @@
 ## Build, Test, Run Workflow
 - Todas las clases deben tener realizadas sus pruebas unitarias respectivas, cumpliendo los principios de atomicidad
 
+# Documentación: 
+- Todos los endpoints deben estar documentados son OpenAPI.
+
 ## Dependency and Integration Notes
-- Web/API capas basado en servlet y con programación funcional (`spring-boot-starter-webmvc`), no WebFlux.
+- Web/API capas basado en servlet y con programación funcional (`spring-boot-starter-web`), no WebFlux.
 - JPA + Postgresql para la persistencia de los datos (`spring-boot-starter-data-jpa`, `org.postgresql:postgresql`).
 - Validation para la validación de los Request, es decir del cuerpo de la implementación NO utilizar en la capa de dominio (`spring-boot-starter-validation`).
 
 
 ## Instrucciones adicionales
 - Cada una de las peticiones, seguir adecuadamente el requerimiento y los criterios de aceptación
+- Todos los endpoints deben cumplir con el estándar de buenas prácticas del protocolo HTTP 
+- Todo el código generado debe estar en el Idioma Ingles.
