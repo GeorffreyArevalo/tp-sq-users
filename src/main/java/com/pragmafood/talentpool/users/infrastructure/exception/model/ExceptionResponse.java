@@ -11,11 +11,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder(toBuilder = true)
-public class ExceptionResponse {
+public class ExceptionResponse<T> {
     
     private LocalDateTime timestamp;
     private String message;
-    private String details;
+    private T details;
     private String statusCode;
     private int httpStatus;
 

@@ -17,14 +17,14 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ExceptionResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ExceptionResponse<Map<String, String>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors()
                 .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
-        ExceptionResponse response = ExceptionResponse.builder()
+        ExceptionResponse<Map<String, String>> response = ExceptionResponse.<Map<String, String>>builder()
                 .timestamp(LocalDateTime.now())
                 .message("Validation failed")
-                .details(errors.toString())
+                .details(errors)
                 .statusCode(HttpStatus.BAD_REQUEST.toString())
                 .httpStatus(HttpStatus.BAD_REQUEST.value())
                 .build();
@@ -32,8 +32,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UserBusinessException.class)
-    public ResponseEntity<ExceptionResponse> handleUserBusinessException(UserBusinessException ex) {
-        ExceptionResponse response = ExceptionResponse.builder()
+    public ResponseEntity<ExceptionResponse<String>> handleUserBusinessException(UserBusinessException ex) {
+        ExceptionResponse<String> response = ExceptionResponse.<String>builder()
                 .timestamp(LocalDateTime.now())
                 .message(ex.getMessage())
                 .details("Ha ocurrido un error al procesar la solicitud del usuario")

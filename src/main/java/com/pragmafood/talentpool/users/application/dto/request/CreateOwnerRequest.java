@@ -8,6 +8,11 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 public record CreateOwnerRequest(
 
 
@@ -28,6 +33,7 @@ public record CreateOwnerRequest(
     String phone,
 
     @NotNull(message = "La fecha de nacimiento es obligatoria")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     LocalDate birthDate,
 
     @NotBlank(message = "El correo es obligatorio")
