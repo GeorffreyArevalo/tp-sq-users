@@ -32,4 +32,4 @@
 ## Instrucciones adicionales
 - Cada una de las peticiones, seguir adecuadamente el requerimiento y los criterios de aceptación
 - Todos los endpoints deben cumplir con el estándar de buenas prácticas del protocolo HTTP 
-- Todo el código generado debe estar en el Idioma Ingles.
+- Todo el código generado debe estar en el **Idioma Ingles**, tanto sus propiedades como nombre de clases.

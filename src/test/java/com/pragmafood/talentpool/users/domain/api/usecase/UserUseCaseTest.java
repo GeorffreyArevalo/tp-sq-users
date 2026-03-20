@@ -1,0 +1,136 @@
+package com.pragmafood.talentpool.users.domain.api.usecase;
+
+import com.pragmafood.talentpool.users.domain.exception.DocumentAlreadyExistsException;
+import com.pragmafood.talentpool.users.domain.exception.EmailAlreadyExistsException;
+import com.pragmafood.talentpool.users.domain.exception.UserUnderAgeException;
+import com.pragmafood.talentpool.users.domain.model.Role;
+import com.pragmafood.talentpool.users.domain.model.User;
+import com.pragmafood.talentpool.users.domain.spi.PasswordEncoderPort;
+import com.pragmafood.talentpool.users.domain.spi.UserPersistencePort;
+import com.pragmafood.talentpool.users.domain.usecase.UserUseCase;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDate;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class UserUseCaseTest {
+
+    @Mock
+    private UserPersistencePort userPersistencePort;
+
+    @Mock
+    private PasswordEncoderPort passwordEncoderPort;
+
+    @InjectMocks
+    private UserUseCase userUseCase;
+
+    private User validUser;
+
+    @BeforeEach
+    void setUp() {
+        validUser = new User();
+        validUser.setName("Juan");
+        validUser.setLastName("Pérez");
+        validUser.setDocumentId("123456789");
+        validUser.setPhone("+573005698325");
+        validUser.setBirthDate(LocalDate.of(2000, 1, 1));
+        validUser.setEmail("juan@example.com");
+        validUser.setPassword("password123");
+    }
+
+    @Test
+    void createOwner_shouldCreateOwnerSuccessfully() {
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(userPersistencePort.findByDocumentId(anyString())).thenReturn(Optional.empty());
+        when(passwordEncoderPort.encode(anyString())).thenReturn("encodedPassword");
+        when(userPersistencePort.saveUser(any(User.class))).thenAnswer(invocation -> {
+            User saved = invocation.getArgument(0);
+            saved.setId(1L);
+            return saved;
+        });
+
+        User result = userUseCase.createOwner(validUser);
+
+        assertNotNull(result.getId());
+        assertEquals(Role.OWNER, result.getRole());
+        assertEquals("encodedPassword", result.getPassword());
+        verify(userPersistencePort).saveUser(any(User.class));
+    }
+
+    @Test
+    void createOwner_shouldThrowWhenUserIsUnderage() {
+        validUser.setBirthDate(LocalDate.now().minusYears(17));
+
+        assertThrows(UserUnderAgeException.class, () -> userUseCase.createOwner(validUser));
+        verify(userPersistencePort, never()).saveUser(any());
+    }
+
+    @Test
+    void createOwner_shouldThrowWhenEmailAlreadyExists() {
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.of(validUser));
+
+        assertThrows(EmailAlreadyExistsException.class, () -> userUseCase.createOwner(validUser));
+        verify(userPersistencePort, never()).saveUser(any());
+    }
+
+    @Test
+    void createOwner_shouldThrowWhenDocumentAlreadyExists() {
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(userPersistencePort.findByDocumentId(anyString())).thenReturn(Optional.of(validUser));
+
+        assertThrows(DocumentAlreadyExistsException.class, () -> userUseCase.createOwner(validUser));
+        verify(userPersistencePort, never()).saveUser(any());
+    }
+
+    @Test
+    void createOwner_shouldEncodePassword() {
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(userPersistencePort.findByDocumentId(anyString())).thenReturn(Optional.empty());
+        when(passwordEncoderPort.encode("password123")).thenReturn("$2a$10$encodedHash");
+        when(userPersistencePort.saveUser(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userUseCase.createOwner(validUser);
+
+        assertEquals("$2a$10$encodedHash", result.getPassword());
+        verify(passwordEncoderPort).encode("password123");
+    }
+
+    @Test
+    void createOwner_shouldAlwaysSetRoleToPropietario() {
+        validUser.setRole(Role.ADMIN);
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(userPersistencePort.findByDocumentId(anyString())).thenReturn(Optional.empty());
+        when(passwordEncoderPort.encode(anyString())).thenReturn("encoded");
+        when(userPersistencePort.saveUser(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userUseCase.createOwner(validUser);
+
+        assertEquals(Role.OWNER, result.getRole());
+    }
+
+    @Test
+    void createOwner_shouldAcceptExactly18YearsOld() {
+        validUser.setBirthDate(LocalDate.now().minusYears(18));
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(userPersistencePort.findByDocumentId(anyString())).thenReturn(Optional.empty());
+        when(passwordEncoderPort.encode(anyString())).thenReturn("encoded");
+        when(userPersistencePort.saveUser(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userUseCase.createOwner(validUser);
+
+        assertNotNull(result);
+        assertEquals(Role.OWNER, result.getRole());
+    }
+}
