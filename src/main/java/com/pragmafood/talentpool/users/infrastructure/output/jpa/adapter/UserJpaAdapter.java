@@ -37,4 +37,10 @@ public class UserJpaAdapter implements UserPersistencePort {
         return userRepository.findByDocumentId(documentId)
                 .map(userEntityMapper::toDomain);
     }
+
+    @Override
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id)
+                .map(userEntityMapper::toDomain);
+    }
 }

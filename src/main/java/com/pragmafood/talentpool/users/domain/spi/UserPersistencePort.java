@@ -11,4 +11,6 @@ public interface UserPersistencePort {
     Optional<User> findByEmail(String email);
 
     Optional<User> findByDocumentId(String documentId);
+
+    Optional<User> findById(Long id);
 }

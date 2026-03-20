@@ -2,6 +2,7 @@ package com.pragmafood.talentpool.users.domain.api.usecase;
 
 import com.pragmafood.talentpool.users.domain.exception.DocumentAlreadyExistsException;
 import com.pragmafood.talentpool.users.domain.exception.EmailAlreadyExistsException;
+import com.pragmafood.talentpool.users.domain.exception.UserNotFoundException;
 import com.pragmafood.talentpool.users.domain.exception.UserUnderAgeException;
 import com.pragmafood.talentpool.users.domain.model.Role;
 import com.pragmafood.talentpool.users.domain.model.User;
@@ -132,5 +133,25 @@ class UserUseCaseTest {
 
         assertNotNull(result);
         assertEquals(Role.OWNER, result.getRole());
+    }
+
+    @Test
+    void getUserById_shouldReturnUserWhenExists() {
+        validUser.setId(1L);
+        when(userPersistencePort.findById(1L)).thenReturn(Optional.of(validUser));
+
+        User result = userUseCase.getUserById(1L);
+
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        verify(userPersistencePort).findById(1L);
+    }
+
+    @Test
+    void getUserById_shouldThrowWhenUserNotFound() {
+        when(userPersistencePort.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> userUseCase.getUserById(99L));
+        verify(userPersistencePort).findById(99L);
     }
 }

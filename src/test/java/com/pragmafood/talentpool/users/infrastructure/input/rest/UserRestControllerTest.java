@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pragmafood.talentpool.users.application.dto.request.CreateOwnerRequest;
 import com.pragmafood.talentpool.users.application.dto.response.UserResponse;
 import com.pragmafood.talentpool.users.application.handler.user.UserHandler;
+import com.pragmafood.talentpool.users.domain.exception.UserNotFoundException;
 import com.pragmafood.talentpool.users.domain.exception.UserUnderAgeException;
 import com.pragmafood.talentpool.users.infrastructure.exception.handler.GlobalExceptionHandler;
 
@@ -22,6 +23,7 @@ import java.time.LocalDate;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -138,5 +140,29 @@ class UserRestControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("El usuario debe ser mayor de edad"));
+    }
+
+    @Test
+    void getUserById_shouldReturn200WhenUserExists() throws Exception {
+        UserResponse response = new UserResponse(
+                1L, "Juan", "Pérez", "123456789", "+573005698325",
+                LocalDate.of(2000, 1, 1), "juan@example.com", "PROPIETARIO"
+        );
+
+        when(userHandler.getUserById(1L)).thenReturn(response);
+
+        mockMvc.perform(get("/users/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1));
+    }
+
+    @Test
+    void getUserById_shouldReturn404WhenUserNotFound() throws Exception {
+        when(userHandler.getUserById(99L))
+                .thenThrow(new UserNotFoundException("No se encontró un usuario con el id 99"));
+
+        mockMvc.perform(get("/users/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("No se encontró un usuario con el id 99"));
     }
 }

@@ -26,4 +26,10 @@ public class UserHandlerImpl implements UserHandler {
         User savedUser = userServicePort.createOwner(user);
         return mapper.toResponse(savedUser);
     }
+
+    @Override
+    public UserResponse getUserById(Long id) {
+        User user = userServicePort.getUserById(id);
+        return mapper.toResponse(user);
+    }
 }

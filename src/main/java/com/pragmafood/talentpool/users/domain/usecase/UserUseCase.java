@@ -2,9 +2,10 @@ package com.pragmafood.talentpool.users.domain.usecase;
 
 import com.pragmafood.talentpool.users.domain.api.UserServicePort;
 import com.pragmafood.talentpool.users.domain.constants.BusinessConstants;
-import com.pragmafood.talentpool.users.domain.enums.ExceptionMessges;
+import com.pragmafood.talentpool.users.domain.enums.ExceptionMessages;
 import com.pragmafood.talentpool.users.domain.exception.DocumentAlreadyExistsException;
 import com.pragmafood.talentpool.users.domain.exception.EmailAlreadyExistsException;
+import com.pragmafood.talentpool.users.domain.exception.UserNotFoundException;
 import com.pragmafood.talentpool.users.domain.exception.UserUnderAgeException;
 import com.pragmafood.talentpool.users.domain.model.Role;
 import com.pragmafood.talentpool.users.domain.model.User;
@@ -30,14 +31,14 @@ public class UserUseCase implements UserServicePort {
         userPersistencePort.findByEmail( user.getEmail() )
         .ifPresent( savedUser -> {
             throw new EmailAlreadyExistsException(
-                String.format(ExceptionMessges.EMAIL_ALREADY_EXISTS.getMessage(), savedUser.getEmail())
+                String.format(ExceptionMessages.EMAIL_ALREADY_EXISTS.getMessage(), savedUser.getEmail())
             );
         });
 
         userPersistencePort.findByDocumentId( user.getDocumentId() )
         .ifPresent( savedUser -> {
             throw new DocumentAlreadyExistsException(
-                String.format(ExceptionMessges.DOCUMENT_ALREADY_EXISTS.getMessage(), savedUser.getDocumentId())
+                String.format(ExceptionMessages.DOCUMENT_ALREADY_EXISTS.getMessage(), savedUser.getDocumentId())
             );
         });
 
@@ -45,6 +46,14 @@ public class UserUseCase implements UserServicePort {
         user.setRole(Role.OWNER);
 
         return userPersistencePort.saveUser(user);
+    }
+
+    @Override
+    public User getUserById(Long id) {
+        return userPersistencePort.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(
+                        String.format(ExceptionMessages.USER_NOT_FOUND.getMessage(), id)
+                ));
     }
 
     private void validateAge(LocalDate birthDate) {
@@ -55,7 +64,7 @@ public class UserUseCase implements UserServicePort {
         }
         if (age < BusinessConstants.LEGAL_AGE) {
             throw new UserUnderAgeException(
-                String.format(ExceptionMessges.USER_UNDER_AGE.getMessage())
+                String.format(ExceptionMessages.USER_UNDER_AGE.getMessage())
             );
         }
     }

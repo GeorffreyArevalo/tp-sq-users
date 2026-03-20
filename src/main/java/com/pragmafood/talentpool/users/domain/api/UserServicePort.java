@@ -5,4 +5,6 @@ import com.pragmafood.talentpool.users.domain.model.User;
 public interface UserServicePort {
 
     User createOwner(User user);
+
+    User getUserById(Long id);
 }
