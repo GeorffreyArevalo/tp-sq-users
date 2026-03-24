@@ -27,11 +27,11 @@ public class JwtTokenProvider implements TokenProviderPort {
     public String generateToken(User user) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .subject(user.getEmail())
+                .subject(String.valueOf(user.getId()))
                 .issuedAt(now)
                 .expiresAt(now.plusMillis(expiration))
                 .claim("role", user.getRole().name())
-                .claim("userId", user.getId())
+                .claim("email", user.getEmail())
                 .build();
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
