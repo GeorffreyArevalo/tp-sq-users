@@ -1,5 +1,6 @@
 package com.pragmafood.talentpool.users.application.handler.user;
 
+import com.pragmafood.talentpool.users.application.dto.request.CreateClientRequest;
 import com.pragmafood.talentpool.users.application.dto.request.CreateEmployeeRequest;
 import com.pragmafood.talentpool.users.application.dto.request.CreateOwnerRequest;
 import com.pragmafood.talentpool.users.application.dto.response.UserResponse;
@@ -33,6 +34,14 @@ public class UserHandlerImpl implements UserHandler {
     public UserResponse createEmployee(CreateEmployeeRequest request) {
         User user = mapper.requestToModel(request);
         User savedUser = userServicePort.createEmployee(user);
+        return mapper.toResponse(savedUser);
+    }
+
+    @Transactional
+    @Override
+    public UserResponse createClient(CreateClientRequest request) {
+        User user = mapper.requestToModel(request);
+        User savedUser = userServicePort.createClient(user);
         return mapper.toResponse(savedUser);
     }
 

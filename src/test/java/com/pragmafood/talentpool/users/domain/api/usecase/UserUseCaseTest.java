@@ -256,4 +256,85 @@ class UserUseCaseTest {
 
         assertEquals(Role.EMPLOYEE, result.getRole());
     }
+
+    @Test
+    void createClient_shouldCreateClientSuccessfully() {
+        User client = new User();
+        client.setName("Maria");
+        client.setLastName("Garcia");
+        client.setDocumentId("111222333");
+        client.setPhone("+573009876543");
+        client.setEmail("maria@example.com");
+        client.setPassword("clientPass123");
+
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(userPersistencePort.findByDocumentId(anyString())).thenReturn(Optional.empty());
+        when(passwordEncoderPort.encode(anyString())).thenReturn("encodedPassword");
+        when(userPersistencePort.saveUser(any(User.class))).thenAnswer(invocation -> {
+            User saved = invocation.getArgument(0);
+            saved.setId(3L);
+            return saved;
+        });
+
+        User result = userUseCase.createClient(client);
+
+        assertNotNull(result.getId());
+        assertEquals(Role.CLIENT, result.getRole());
+        assertEquals("encodedPassword", result.getPassword());
+        verify(userPersistencePort).saveUser(any(User.class));
+    }
+
+    @Test
+    void createClient_shouldThrowWhenEmailAlreadyExists() {
+        User client = new User();
+        client.setName("Maria");
+        client.setLastName("Garcia");
+        client.setDocumentId("111222333");
+        client.setPhone("+573009876543");
+        client.setEmail("maria@example.com");
+        client.setPassword("clientPass123");
+
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.of(client));
+
+        assertThrows(EmailAlreadyExistsException.class, () -> userUseCase.createClient(client));
+        verify(userPersistencePort, never()).saveUser(any());
+    }
+
+    @Test
+    void createClient_shouldThrowWhenDocumentAlreadyExists() {
+        User client = new User();
+        client.setName("Maria");
+        client.setLastName("Garcia");
+        client.setDocumentId("111222333");
+        client.setPhone("+573009876543");
+        client.setEmail("maria@example.com");
+        client.setPassword("clientPass123");
+
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(userPersistencePort.findByDocumentId(anyString())).thenReturn(Optional.of(client));
+
+        assertThrows(DocumentAlreadyExistsException.class, () -> userUseCase.createClient(client));
+        verify(userPersistencePort, never()).saveUser(any());
+    }
+
+    @Test
+    void createClient_shouldAlwaysSetRoleToClient() {
+        User client = new User();
+        client.setName("Maria");
+        client.setLastName("Garcia");
+        client.setDocumentId("111222333");
+        client.setPhone("+573009876543");
+        client.setEmail("maria@example.com");
+        client.setPassword("clientPass123");
+        client.setRole(Role.ADMIN);
+
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(userPersistencePort.findByDocumentId(anyString())).thenReturn(Optional.empty());
+        when(passwordEncoderPort.encode(anyString())).thenReturn("encoded");
+        when(userPersistencePort.saveUser(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userUseCase.createClient(client);
+
+        assertEquals(Role.CLIENT, result.getRole());
+    }
 }

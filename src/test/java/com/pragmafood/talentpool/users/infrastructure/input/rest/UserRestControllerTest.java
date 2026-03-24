@@ -2,6 +2,7 @@ package com.pragmafood.talentpool.users.infrastructure.input.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.pragmafood.talentpool.users.application.dto.request.CreateClientRequest;
 import com.pragmafood.talentpool.users.application.dto.request.CreateEmployeeRequest;
 import com.pragmafood.talentpool.users.application.dto.request.CreateOwnerRequest;
 import com.pragmafood.talentpool.users.application.dto.response.UserResponse;
@@ -237,6 +238,68 @@ class UserRestControllerTest {
         );
 
         mockMvc.perform(post("/users/employee")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createClient_shouldReturn201WhenRequestIsValid() throws Exception {
+        CreateClientRequest request = new CreateClientRequest(
+                "Maria", "Garcia", "111222333", "+573009876543",
+                "maria@example.com", "clientPass123"
+        );
+
+        UserResponse response = new UserResponse(
+                3L, "Maria", "Garcia", "111222333", "+573009876543",
+                null, "maria@example.com", "CLIENT"
+        );
+
+        when(userHandler.createClient(any(CreateClientRequest.class))).thenReturn(response);
+
+        mockMvc.perform(post("/users/client")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(3))
+                .andExpect(jsonPath("$.name").value("Maria"))
+                .andExpect(jsonPath("$.role").value("CLIENT"));
+    }
+
+    @Test
+    void createClient_shouldReturn400WhenNameIsBlank() throws Exception {
+        CreateClientRequest request = new CreateClientRequest(
+                "", "Garcia", "111222333", "+573009876543",
+                "maria@example.com", "clientPass123"
+        );
+
+        mockMvc.perform(post("/users/client")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createClient_shouldReturn400WhenEmailIsInvalid() throws Exception {
+        CreateClientRequest request = new CreateClientRequest(
+                "Maria", "Garcia", "111222333", "+573009876543",
+                "not-an-email", "clientPass123"
+        );
+
+        mockMvc.perform(post("/users/client")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createClient_shouldReturn400WhenPasswordIsBlank() throws Exception {
+        CreateClientRequest request = new CreateClientRequest(
+                "Maria", "Garcia", "111222333", "+573009876543",
+                "maria@example.com", ""
+        );
+
+        mockMvc.perform(post("/users/client")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());

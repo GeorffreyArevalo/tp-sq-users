@@ -27,29 +27,20 @@ public class UserUseCase implements UserServicePort {
     @Override
     public User createOwner(User user) {
         validateAge(user.getBirthDate());
-
-        userPersistencePort.findByEmail( user.getEmail() )
-        .ifPresent( savedUser -> {
-            throw new EmailAlreadyExistsException(
-                String.format(ExceptionMessages.EMAIL_ALREADY_EXISTS.getMessage(), savedUser.getEmail())
-            );
-        });
-
-        userPersistencePort.findByDocumentId( user.getDocumentId() )
-        .ifPresent( savedUser -> {
-            throw new DocumentAlreadyExistsException(
-                String.format(ExceptionMessages.DOCUMENT_ALREADY_EXISTS.getMessage(), savedUser.getDocumentId())
-            );
-        });
-
-        user.setPassword(passwordEncoderPort.encode(user.getPassword()));
-        user.setRole(Role.OWNER);
-
-        return userPersistencePort.saveUser(user);
+        return validateAndSaveUser(user, Role.OWNER);
     }
 
     @Override
     public User createEmployee(User user) {
+        return validateAndSaveUser(user, Role.EMPLOYEE);
+    }
+
+    @Override
+    public User createClient(User user) {
+        return validateAndSaveUser(user, Role.CLIENT);
+    }
+
+    private User validateAndSaveUser(User user, Role role) {
         userPersistencePort.findByEmail(user.getEmail())
                 .ifPresent(savedUser -> {
                     throw new EmailAlreadyExistsException(
@@ -65,7 +56,7 @@ public class UserUseCase implements UserServicePort {
                 });
 
         user.setPassword(passwordEncoderPort.encode(user.getPassword()));
-        user.setRole(Role.EMPLOYEE);
+        user.setRole(role);
 
         return userPersistencePort.saveUser(user);
     }
