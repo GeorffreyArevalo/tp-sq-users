@@ -1,5 +1,6 @@
 package com.pragmafood.talentpool.users.infrastructure.input.rest;
 
+import com.pragmafood.talentpool.users.application.dto.request.CreateEmployeeRequest;
 import com.pragmafood.talentpool.users.application.dto.request.CreateOwnerRequest;
 import com.pragmafood.talentpool.users.application.dto.response.UserResponse;
 import com.pragmafood.talentpool.users.application.handler.user.UserHandler;
@@ -26,6 +27,11 @@ public class UserRestController {
     @PostMapping("/owner")
     public ResponseEntity<UserResponse> createOwner(@Valid @RequestBody CreateOwnerRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userHandler.createOwner(request));
+    }
+
+    @PostMapping("/employee")
+    public ResponseEntity<UserResponse> createEmployee(@Valid @RequestBody CreateEmployeeRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userHandler.createEmployee(request));
     }
 
     @GetMapping("/{id}")

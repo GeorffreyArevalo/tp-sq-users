@@ -2,6 +2,7 @@ package com.pragmafood.talentpool.users.infrastructure.input.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.pragmafood.talentpool.users.application.dto.request.CreateEmployeeRequest;
 import com.pragmafood.talentpool.users.application.dto.request.CreateOwnerRequest;
 import com.pragmafood.talentpool.users.application.dto.response.UserResponse;
 import com.pragmafood.talentpool.users.application.handler.user.UserHandler;
@@ -164,5 +165,80 @@ class UserRestControllerTest {
         mockMvc.perform(get("/users/99"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("No se encontró un usuario con el id 99"));
+    }
+
+    @Test
+    void createEmployee_shouldReturn201WhenRequestIsValid() throws Exception {
+        CreateEmployeeRequest request = new CreateEmployeeRequest(
+                "Carlos", "Lopez", "987654321", "+573001234567",
+                "carlos@example.com", "secret123"
+        );
+
+        UserResponse response = new UserResponse(
+                2L, "Carlos", "Lopez", "987654321", "+573001234567",
+                null, "carlos@example.com", "EMPLOYEE"
+        );
+
+        when(userHandler.createEmployee(any(CreateEmployeeRequest.class))).thenReturn(response);
+
+        mockMvc.perform(post("/users/employee")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(2))
+                .andExpect(jsonPath("$.name").value("Carlos"))
+                .andExpect(jsonPath("$.role").value("EMPLOYEE"));
+    }
+
+    @Test
+    void createEmployee_shouldReturn400WhenNameIsBlank() throws Exception {
+        CreateEmployeeRequest request = new CreateEmployeeRequest(
+                "", "Lopez", "987654321", "+573001234567",
+                "carlos@example.com", "secret123"
+        );
+
+        mockMvc.perform(post("/users/employee")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createEmployee_shouldReturn400WhenEmailIsInvalid() throws Exception {
+        CreateEmployeeRequest request = new CreateEmployeeRequest(
+                "Carlos", "Lopez", "987654321", "+573001234567",
+                "not-an-email", "secret123"
+        );
+
+        mockMvc.perform(post("/users/employee")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createEmployee_shouldReturn400WhenDocumentHasLetters() throws Exception {
+        CreateEmployeeRequest request = new CreateEmployeeRequest(
+                "Carlos", "Lopez", "987abc", "+573001234567",
+                "carlos@example.com", "secret123"
+        );
+
+        mockMvc.perform(post("/users/employee")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createEmployee_shouldReturn400WhenPasswordIsBlank() throws Exception {
+        CreateEmployeeRequest request = new CreateEmployeeRequest(
+                "Carlos", "Lopez", "987654321", "+573001234567",
+                "carlos@example.com", ""
+        );
+
+        mockMvc.perform(post("/users/employee")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
     }
 }

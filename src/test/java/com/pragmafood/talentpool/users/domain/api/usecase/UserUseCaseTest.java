@@ -154,4 +154,106 @@ class UserUseCaseTest {
         assertThrows(UserNotFoundException.class, () -> userUseCase.getUserById(99L));
         verify(userPersistencePort).findById(99L);
     }
+
+    @Test
+    void createEmployee_shouldCreateEmployeeSuccessfully() {
+        User employee = new User();
+        employee.setName("Carlos");
+        employee.setLastName("Lopez");
+        employee.setDocumentId("987654321");
+        employee.setPhone("+573001234567");
+        employee.setEmail("carlos@example.com");
+        employee.setPassword("secret123");
+
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(userPersistencePort.findByDocumentId(anyString())).thenReturn(Optional.empty());
+        when(passwordEncoderPort.encode(anyString())).thenReturn("encodedPassword");
+        when(userPersistencePort.saveUser(any(User.class))).thenAnswer(invocation -> {
+            User saved = invocation.getArgument(0);
+            saved.setId(2L);
+            return saved;
+        });
+
+        User result = userUseCase.createEmployee(employee);
+
+        assertNotNull(result.getId());
+        assertEquals(Role.EMPLOYEE, result.getRole());
+        assertEquals("encodedPassword", result.getPassword());
+        verify(userPersistencePort).saveUser(any(User.class));
+    }
+
+    @Test
+    void createEmployee_shouldThrowWhenEmailAlreadyExists() {
+        User employee = new User();
+        employee.setName("Carlos");
+        employee.setLastName("Lopez");
+        employee.setDocumentId("987654321");
+        employee.setPhone("+573001234567");
+        employee.setEmail("carlos@example.com");
+        employee.setPassword("secret123");
+
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.of(employee));
+
+        assertThrows(EmailAlreadyExistsException.class, () -> userUseCase.createEmployee(employee));
+        verify(userPersistencePort, never()).saveUser(any());
+    }
+
+    @Test
+    void createEmployee_shouldThrowWhenDocumentAlreadyExists() {
+        User employee = new User();
+        employee.setName("Carlos");
+        employee.setLastName("Lopez");
+        employee.setDocumentId("987654321");
+        employee.setPhone("+573001234567");
+        employee.setEmail("carlos@example.com");
+        employee.setPassword("secret123");
+
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(userPersistencePort.findByDocumentId(anyString())).thenReturn(Optional.of(employee));
+
+        assertThrows(DocumentAlreadyExistsException.class, () -> userUseCase.createEmployee(employee));
+        verify(userPersistencePort, never()).saveUser(any());
+    }
+
+    @Test
+    void createEmployee_shouldEncodePassword() {
+        User employee = new User();
+        employee.setName("Carlos");
+        employee.setLastName("Lopez");
+        employee.setDocumentId("987654321");
+        employee.setPhone("+573001234567");
+        employee.setEmail("carlos@example.com");
+        employee.setPassword("secret123");
+
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(userPersistencePort.findByDocumentId(anyString())).thenReturn(Optional.empty());
+        when(passwordEncoderPort.encode("secret123")).thenReturn("$2a$10$encodedHash");
+        when(userPersistencePort.saveUser(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userUseCase.createEmployee(employee);
+
+        assertEquals("$2a$10$encodedHash", result.getPassword());
+        verify(passwordEncoderPort).encode("secret123");
+    }
+
+    @Test
+    void createEmployee_shouldAlwaysSetRoleToEmployee() {
+        User employee = new User();
+        employee.setName("Carlos");
+        employee.setLastName("Lopez");
+        employee.setDocumentId("987654321");
+        employee.setPhone("+573001234567");
+        employee.setEmail("carlos@example.com");
+        employee.setPassword("secret123");
+        employee.setRole(Role.ADMIN);
+
+        when(userPersistencePort.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(userPersistencePort.findByDocumentId(anyString())).thenReturn(Optional.empty());
+        when(passwordEncoderPort.encode(anyString())).thenReturn("encoded");
+        when(userPersistencePort.saveUser(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userUseCase.createEmployee(employee);
+
+        assertEquals(Role.EMPLOYEE, result.getRole());
+    }
 }

@@ -1,5 +1,6 @@
 package com.pragmafood.talentpool.users.application.mapper;
 
+import com.pragmafood.talentpool.users.application.dto.request.CreateEmployeeRequest;
 import com.pragmafood.talentpool.users.application.dto.request.CreateOwnerRequest;
 import com.pragmafood.talentpool.users.application.dto.response.UserResponse;
 import com.pragmafood.talentpool.users.domain.model.User;
@@ -15,6 +16,7 @@ import org.mapstruct.ReportingPolicy;
 public interface UserDtoMapper {
 
     User requestToModel(CreateOwnerRequest request);
+    User requestToModel(CreateEmployeeRequest request);
     UserResponse toResponse(User user);
 
 }

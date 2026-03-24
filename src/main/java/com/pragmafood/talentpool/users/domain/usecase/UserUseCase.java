@@ -49,6 +49,28 @@ public class UserUseCase implements UserServicePort {
     }
 
     @Override
+    public User createEmployee(User user) {
+        userPersistencePort.findByEmail(user.getEmail())
+                .ifPresent(savedUser -> {
+                    throw new EmailAlreadyExistsException(
+                            String.format(ExceptionMessages.EMAIL_ALREADY_EXISTS.getMessage(), savedUser.getEmail())
+                    );
+                });
+
+        userPersistencePort.findByDocumentId(user.getDocumentId())
+                .ifPresent(savedUser -> {
+                    throw new DocumentAlreadyExistsException(
+                            String.format(ExceptionMessages.DOCUMENT_ALREADY_EXISTS.getMessage(), savedUser.getDocumentId())
+                    );
+                });
+
+        user.setPassword(passwordEncoderPort.encode(user.getPassword()));
+        user.setRole(Role.EMPLOYEE);
+
+        return userPersistencePort.saveUser(user);
+    }
+
+    @Override
     public User getUserById(Long id) {
         return userPersistencePort.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(

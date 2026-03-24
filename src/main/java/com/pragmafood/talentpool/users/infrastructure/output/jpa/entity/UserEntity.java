@@ -37,7 +37,7 @@ public class UserEntity {
     @Column(nullable = false)
     private String phone;
 
-    @Column(name = "birth_date", nullable = false)
+    @Column(name = "birth_date")
     private LocalDate birthDate;
 
     @Column(nullable = false, unique = true)
