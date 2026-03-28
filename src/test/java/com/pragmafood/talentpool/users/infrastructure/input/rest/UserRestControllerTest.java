@@ -71,8 +71,8 @@ class UserRestControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.nombre").value("Juan"))
-                .andExpect(jsonPath("$.rol").value("PROPIETARIO"));
+                .andExpect(jsonPath("$.name").value("Juan"))
+                .andExpect(jsonPath("$.role").value("PROPIETARIO"));
     }
 
     @Test
@@ -95,7 +95,7 @@ class UserRestControllerTest {
                 LocalDate.of(2000, 1, 1), "not-an-email", "password123"
         );
 
-        mockMvc.perform(post("/api/v1/users/owner")
+        mockMvc.perform(post("/users/owner")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -108,7 +108,7 @@ class UserRestControllerTest {
                 LocalDate.of(2000, 1, 1), "juan@example.com", "password123"
         );
 
-        mockMvc.perform(post("/api/v1/users/owner")
+        mockMvc.perform(post("/users/owner")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -121,7 +121,7 @@ class UserRestControllerTest {
                 LocalDate.of(2000, 1, 1), "juan@example.com", "password123"
         );
 
-        mockMvc.perform(post("/api/v1/users/owner")
+        mockMvc.perform(post("/users/owner")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());

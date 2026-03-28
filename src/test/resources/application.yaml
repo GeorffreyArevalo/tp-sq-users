@@ -1,0 +1,12 @@
+# Configuración de variables de entorno para pruebas
+
+spring:
+  application:
+    name: users
+  datasource:
+    url: jdbc:postgresql://localhost:5432/users
+    username: postgres
+    password: 1234
+
+jwt:
+  private-key: "TEST_PRIVATE_KEY"
