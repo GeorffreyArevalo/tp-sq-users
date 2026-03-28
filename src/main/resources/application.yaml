@@ -21,3 +21,4 @@ jwt:
   private-key: ${PRIVATE_KEY}
   public-key: ${PUBLIC_KEY}
   expiration: 86400000
+
